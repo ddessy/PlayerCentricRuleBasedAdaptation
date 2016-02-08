@@ -15,7 +15,7 @@ using System;
 
 namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 {
-    class PlayCentricStatisticExtractorDefault : PlayCentricStatisticExtractor
+    public class PlayerCentricStatisticExtractorDefault : PlayerCentricStatisticExtractor
     {
         public override object PatternEventHandler(object patternInput, object gameObject)
         {
