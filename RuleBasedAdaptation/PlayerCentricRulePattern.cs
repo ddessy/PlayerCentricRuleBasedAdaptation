@@ -20,7 +20,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 {
     public class PlayerCentricRulePattern
     {
-        private Dictionary<String, Dictionary<int, int>> _metric; // ENCAPSULATE FIELD BY CODEIT.RIGHT
+        private Dictionary<String, Dictionary<int, int>> _metric; // ENCAPSULATE FIELD
 
         public Dictionary<String, Dictionary<int, int>> Metric
         {
@@ -33,7 +33,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                 _metric = value;
             }
         }
-        private Dictionary<String, List<Object>> _patternList; // ENCAPSULATE FIELD BY CODEIT.RIGHT
+        private Dictionary<String, List<Object>> _patternList; // ENCAPSULATE FIELD
 
         public Dictionary<String, List<Object>> PatternList
         {
@@ -48,23 +48,15 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         }
         private const String RELATIVE_PATTERN = "Relative Pattern";
         private const String ABSOLUTE_PATTERN = "Absolute Pattern";
+        //RULE_PATTERN is used only for modeling values, but not time
         private const String RULE_PATTERN = "Rule Pattern";
+        //RULE_ANY_PATTERN is used only for modeling time, but not values
+        private const String RULE_ANY_PATTERN = "Rule Pattern for the last time value.";
+        //RULE_ALL_PATTERN is used only for modeling time, but not values
+        private const String RULE_ALL_PATTERN = "Rule Pattern for each one time value.";
         private const String RELATIVE_RULE_PATTERN = "Relative Rule Pattern";
         //TODO: Regular expression for patterns to be define.
         public const int VALUES_PER_SECOND = 100;
-        private int _gsrValuesReadTime; // ENCAPSULATE FIELD BY CODEIT.RIGHT
-
-        public int GsrValuesReadTime
-        {
-            get
-            {
-                return _gsrValuesReadTime;
-            }
-            set
-            {
-                _gsrValuesReadTime = value;
-            }
-        }
 
         public PlayerCentricRulePattern()
         {
@@ -107,6 +99,18 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             if (Metric.TryGetValue(metricName, out metricValues))
             {
                 metricValues.Add(DateTime.Now.Millisecond, value);
+            }
+
+            return GetSuccefulPatternsForMetric(metricName);
+        }
+
+        public List<String> SetMetricValue(String metricName, int value, int miliseconds)
+        {
+            Dictionary<int, int> metricValues = null;
+
+            if (Metric.TryGetValue(metricName, out metricValues))
+            {
+                metricValues.Add(miliseconds, value);
             }
 
             return GetSuccefulPatternsForMetric(metricName);
@@ -204,16 +208,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 
         public bool IsSuccesfulPattern(String patternName, String patternMetric)
         {
-            //PlayCentricStatisticExtractorGSRAsset statistics = new PlayCentricStatisticExtractorGSRAsset();
             Dictionary<String, String> patternType = GetPatternType(patternName);
-
-            //if source type is 'GSR'
-            //GSRAsset gsrHandler = new GSRAsset();
-            //int startRecordingTime = statistics.GetGlobalTime();
-
-            //initialize channels' values
-            //Dictionary<int, List<int>> channelsValues = gsrHandler.ExtractChannelsValues();
-            //gsrValuesReadTime = DateTime.Now.Millisecond;
 
             Dictionary<int, int> metricValues = GetMetricValues(patternMetric);
 
@@ -247,52 +242,47 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                     }
 
                     metricRelatedTimeArray[patternTimeLength - 1] = lastTime;
-                    for (int i = 1; i < patternTimes.Length - 2; i--)
+                    for (int i = 1; i < patternTimeLength - 1; i++)
                     {
                         int currentIncrement = GetIncrement(patternTimesArray[i]);
                         metricRelatedTimeArray[i] = firstTime + currentIncrement;
-                        //metrisRelatedTimeIntArray[i] = (int)new DataTable().Compute(patternTimesArray[i].Replace(@"x", @firstValue.ToString()), null);
                     }
-
-                    /*
-                    foreach (KeyValuePair<int, List<int>> channelValue in channelsValues)
-                    {
-                        int lastChannelValue = channelValue.Value[channelValue.Value.Count - 1];
-                        patternTimeIntArray[lastIndexInTimeInt] = lastChannelValue;
-                        int lastIncrement = -1;
-                        if (int.TryParse(patternTimesArray[lastIndexInTimeInt].Substring(patternTimesArray[lastIndexInTimeInt].IndexOf('+')), out lastIncrement))
-                        {
-                            int firstIndexInTimeInt = channelValue.Value.Count - 1 - lastIncrement / 10;
-                            patternTimeIntArray[0] = channelValue.Value[firstIndexInTimeInt];
-                            int t = lastChannelValue - lastIncrement;
-                            for (int i = 1; i < patternTimes.Length - 2; i--)
-                            {
-                                int currentIncrement = int.Parse(patternTimesArray[i].Substring(patternTimesArray[i].IndexOf('+')));
-                                int currentIndexInTimeInt = firstIndexInTimeInt + currentIncrement / 10;
-                                patternTimeIntArray[i] = channelValue.Value[currentIndexInTimeInt];
-                            }
-
-                        }
-                    }*/
 
                     return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, metricRelatedTimeArray);
                 }
-                else if (RULE_PATTERN.Equals(patternTypeByTime, StringComparison.CurrentCulture))
+                else if (RULE_ANY_PATTERN.Equals(patternTypeByTime, StringComparison.CurrentCulture))
                 {
-                    List<int> metricRuleTimeArray = new List<int>();
-                    //foreach(int metricTime in metricValues.Keys)
-                    //{
-
-                    //if we have rule pattern we check only the last value
+                    List<int> metricRuleAnyTimeArray = new List<int>();
+                    
                     if (IsValueSatisfyPattern(patternTimes, metricValues.Keys.Last<int>()))
                     {
-                        metricRuleTimeArray.Add(metricValues.Keys.Last<int>());
+                        metricRuleAnyTimeArray.Add(metricValues.Keys.Last<int>());
                     }
-                    //}
 
-                    if (metricRuleTimeArray.Count > 0)
+                    if (metricRuleAnyTimeArray.Count > 0)
                     {
-                        return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, metricRuleTimeArray.ToArray());
+                        return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, metricRuleAnyTimeArray.ToArray());
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else if (RULE_ALL_PATTERN.Equals(patternTypeByTime, StringComparison.CurrentCulture))
+                {
+                    List<int> metricRuleAllTimeArray = new List<int>();
+
+                    foreach (int k in metricValues.Keys)
+                    {
+                        if (IsValueSatisfyPattern(patternTimes, k))
+                        {
+                            metricRuleAllTimeArray.Add(k);
+                        }
+                    }
+
+                    if (metricRuleAllTimeArray.Count > 0)
+                    {
+                        return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, metricRuleAllTimeArray.ToArray());
                     }
                     else
                     {
@@ -300,7 +290,6 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                     }
                 }
             }
-            //int targetValue = GetValueForTimeAndChannel(targetMilliseconds, targetChannel);
 
             return false;
         }
@@ -308,7 +297,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         private int GetIncrement(String target)
         {
             int result = -1;
-            if (int.TryParse(target.Substring(target.IndexOf('+')), out result))
+            if (!String.IsNullOrEmpty(target) && int.TryParse(target.Substring(target.IndexOf('+')), out result))
             {
                 return result;
             }
@@ -369,8 +358,12 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 
         private bool IsValueSatisfyPattern(String patternValue, int value)
         {
-            patternValue = patternValue.Replace("GT(", value + ">")
+            patternValue = patternValue.ToUpper();
+            patternValue = patternValue.Replace("ALL(", "")
+                                       .Replace("ANY(", "")
+                                       .Replace("GT(", value + ">")
                                        .Replace("LT(", value + "<")
+                                       .Replace("EQ(", value + "==")
                                        .Replace(")", "")
                                        .Replace("AND", "and")
                                        .Replace("OR", "or");
@@ -389,42 +382,6 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                                        .Evaluate(new System.Text.RegularExpressions.Regex(@"([\+\-\*])").Replace(expression, " ${1} ")
                                                                                                         .Replace("/", " div ")
                                                                                                         .Replace("%", " mod "));
-        }
-
-
-
-
-        public int GetValueForTimeAndChannel(int targetMilliseconds, int targetChannel, Dictionary<int, List<int>> channelsValues)
-        {
-            if (targetMilliseconds > GsrValuesReadTime)
-            {
-                return -1;
-            }
-
-            List<int> targetChannelValues;
-            channelsValues.TryGetValue(targetChannel, out targetChannelValues);
-            int channelValuesCount = targetChannelValues.Count;
-            int startTime = GsrValuesReadTime - channelValuesCount * (1000 / VALUES_PER_SECOND);
-
-            if (targetMilliseconds < startTime)
-            {
-                return -1;
-            }
-
-            int index = (targetMilliseconds - startTime) / (1000 / VALUES_PER_SECOND);
-
-
-            if (targetChannelValues != null && channelValuesCount > index)
-            {
-                return targetChannelValues.IndexOf(index);
-            }
-
-            return -1;
-        }
-
-        public bool CheckValueAbsolutePattern(String patternValues, List<int> channelValue)
-        {
-            return true;
         }
 
         /*Pattern type is defined depending on 'time' and 'values'.
@@ -450,7 +407,8 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                 }
             }
 
-            Console.WriteLine("The pattern is not supported.");
+            //TODO: add log file
+            //Console.WriteLine("The pattern is not supported.");
             return null;
         }
 
@@ -475,17 +433,27 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         {
             if (!String.IsNullOrEmpty(value))
             {
-                if ((value.Contains("t") || value.Contains("x")) && (value.Contains("LG") || value.Contains("GT")))
+                if (IsRelativeRulePattern(value))
                 {
                     return RELATIVE_RULE_PATTERN;
                 }
 
-                if (value.Contains("LG") || value.Contains("GT"))
+                if (IsRulePattern(value))
                 {
                     return RULE_PATTERN;
                 }
 
-                if ((value.Contains("t") && value.Trim().Contains("t+")) || (value.Contains("x") && value.Trim().Contains("x+")))
+                if (IsRuleAnyPattern(value))
+                {
+                    return RULE_ANY_PATTERN;
+                }
+
+                if (IsRuleAllPattern(value))
+                {
+                    return RULE_ALL_PATTERN;
+                }
+
+                if (IsRelativePattern(value))
                 {
                     return RELATIVE_PATTERN;
                 }
@@ -497,6 +465,39 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             }
 
             return null;
+        }
+
+        private static bool IsRelativePattern(string value)
+        {
+            value = value.ToUpper();
+            return ( (value.Contains("T") && value.Trim().Contains("T+")) || 
+                     (value.Contains("X") && value.Trim().Contains("X+")) );
+        }
+
+        private static bool IsRelativeRulePattern(string value)
+        {
+            return (IsRelativePattern(value) && IsRulePattern(value));
+        }
+
+        private static bool IsRuleAnyPattern(string value)
+        {
+            value = value.ToUpper();
+            return ( (value.Contains("LG") || value.Contains("GT") || value.Contains("EQ")) &&
+                     (value.Contains("ANY") && !value.Contains("ALL")) );
+        }
+
+        private static bool IsRuleAllPattern(string value)
+        {
+            value = value.ToUpper();
+            return ( (value.Contains("LG") || value.Contains("GT") || value.Contains("EQ")) &&
+                     (!value.Contains("ANY") && value.Contains("ALL")) );
+        }
+
+        private static bool IsRulePattern(string value)
+        {
+            value = value.ToUpper();
+            return ( (value.Contains("LG") || value.Contains("GT") || value.Contains("EQ")) &&
+                     !(value.Contains("ANY") || value.Contains("ALL")) );
         }
 
         private bool IsValueListOfNumbers(String value)
@@ -539,7 +540,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             value = value.Trim();
             value = Regex.Replace(value, @"\s+", " ");
 
-            return new String[1];// value.Split(' ');
+            return value.Split(' ');
         }
     }
 }
