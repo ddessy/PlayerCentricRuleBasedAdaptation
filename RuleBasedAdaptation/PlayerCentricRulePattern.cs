@@ -212,7 +212,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 
             Dictionary<int, int> metricValues = GetMetricValues(patternMetric);
 
-            if (patternType.Count > 0)
+            if (patternType.Count > 0 && metricValues.Count > 0)
             {
                 List<Object> patternByName = GetPatternByName(patternName);
 
