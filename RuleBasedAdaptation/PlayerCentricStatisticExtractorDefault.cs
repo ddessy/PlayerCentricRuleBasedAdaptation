@@ -19,7 +19,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
     {
         public override object PatternEventHandler(object patternInput, object gameObject)
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }
