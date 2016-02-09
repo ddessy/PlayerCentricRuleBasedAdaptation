@@ -173,6 +173,11 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             return Patterns.SetMetricValue(metricName, value);
         }
 
+        public List<String> SetMetricValue(String metricName, int value, int miliseconds)
+        {
+            return Patterns.SetMetricValue(metricName, value, miliseconds);
+        }
+
         //Return all registered patterns.
         public Dictionary<String, List<Object>> GetRegisterPattern()
         {
