@@ -53,11 +53,16 @@
   </Choose>
   <ItemGroup>
     <Compile Include="MetricsRegistration.cs" />
+    <Compile Include="PlayerCentricStatisticExtractorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PatternsRegistration.cs" />
     <Compile Include="MetricPatternsSearching.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\RageAssetManager\RageAssetManager.csproj">
+      <Project>{DA8E9056-2E52-4029-81EB-A2D167614C47}</Project>
+      <Name>RageAssetManager</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RuleBasedAdaptation\RuleBasedAdaptation.csproj">
       <Project>{263e0137-6d05-4fee-b807-a28660319e58}</Project>
       <Name>RuleBasedAdaptation</Name>
