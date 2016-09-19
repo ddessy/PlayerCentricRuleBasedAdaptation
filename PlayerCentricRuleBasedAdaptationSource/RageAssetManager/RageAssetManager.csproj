@@ -22,7 +22,6 @@
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>..\..\..\Default.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Debug\RageAssetManager.XML</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
@@ -34,7 +33,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -51,9 +49,11 @@
     <Compile Include="IDefaultSettings.cs" />
     <Compile Include="ILog.cs" />
     <Compile Include="ISettings.cs" />
+    <Compile Include="IWebServiceRequestAsync.cs" />
     <Compile Include="IWebServiceRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="pubSubz.cs" />
+    <Compile Include="Messages.cs" />
+    <Compile Include="RageExtensions.cs" />
     <Compile Include="RageVersionInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -66,8 +66,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>"c:\Program Files (x86)\Mono\bin\pdb2mdb.bat" "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,10 +1,20 @@
-// <copyright file="AssetManager.cs" company="RAGE">
-// Copyright (c) 2015 RAGE. All rights reserved.
-// </copyright>
-// <author>Veg</author>
-// <date>10-4-2015</date>
-// <summary>Implements the asset manager class</summary>
-
+/*
+ * Copyright 2016 Open University of the Netherlands
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * This project has received funding from the European Union’s Horizon
+ * 2020 research and innovation programme under grant agreement No 644187.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #region platform notes
 //
 //! Embedded Resources & Android (does seem to apply to pure android code, not the pcl/sap):
@@ -81,7 +91,7 @@ namespace AssetManagerPackage
         /// </summary>
         private AssetManager()
         {
-            initEventSystem();
+            // Nothing
         }
 
         #endregion Constructors
@@ -189,11 +199,11 @@ namespace AssetManagerPackage
 
             String Id = String.Format("{0}_{1}", claz, idGenerator++);
 
-            Log("Registering Asset {0}/{1} as {2}", asset.GetType().Name, claz, Id);
+            Log(Severity.Verbose, "Registering Asset {0}/{1} as {2}", asset.GetType().Name, claz, Id);
 
             assets.Add(Id, asset);
 
-            Log("Registered {0} Asset(s)", assets.Count);
+            Log(Severity.Verbose, "Registered {0} Asset(s)", assets.Count);
 
             return Id;
         }
@@ -309,26 +319,28 @@ namespace AssetManagerPackage
         /// Logs.
         /// </summary>
         ///
-        /// <param name="format"> Describes the format to use. </param>
+        /// <param name="loglevel"> The loglevel. </param>
+        /// <param name="format">   Describes the format to use. </param>
         /// <param name="args">     A variable-length parameters list containing
         ///                         arguments. </param>
-        public void Log(String format, params object[] args)
+        public void Log(Severity loglevel, String format, params object[] args)
         {
-            Log(String.Format(format, args));
+            Log(loglevel, String.Format(format, args));
         }
 
         /// <summary>
         /// Logs.
         /// </summary>
         ///
-        /// <param name="msg"> The message. </param>
-        public void Log(String msg)
+        /// <param name="loglevel"> The loglevel. </param>
+        /// <param name="msg">      The message. </param>
+        public void Log(Severity loglevel, String msg)
         {
             logger = getInterface<ILog>();
 
             if (logger != null)
             {
-                logger.Log(msg);
+                logger.Log(loglevel, msg);
             }
         }
 
@@ -364,18 +376,6 @@ namespace AssetManagerPackage
             assets.Clear();
         }
         */
-
-        /// <summary>
-        /// Initialises the event system.
-        /// </summary>
-        private void initEventSystem()
-        {
-            pubsubz.define("EventSystem.Init");
-
-            //! NOTE Unlike the JavaScript and Typescript versions (using a setTimeout) this call here will not trigger any event handling code.
-            //
-            pubsubz.publish("EventSystem.Init', 'hello event!");
-        }
 
         #endregion Methods
 

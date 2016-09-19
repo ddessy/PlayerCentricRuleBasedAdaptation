@@ -1,9 +1,20 @@
-﻿// <copyright file="BaseAsset.cs" company="RAGE">
-// Copyright (c) 2015 RAGE All rights reserved.
-// </copyright>
-// <author>Veg</author>
-// <date>13-4-2015</date>
-// <summary>Implements the base asset class</summary>
+﻿/*
+ * Copyright 2016 Open University of the Netherlands
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * This project has received funding from the European Union’s Horizon
+ * 2020 research and innovation programme under grant agreement No 644187.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 namespace AssetPackage
 {
     using System;
@@ -12,8 +23,10 @@ namespace AssetPackage
     using System.Text;
     using System.Xml.Serialization;
 
+#if PORTABLE
     // System.Reflection is needed for Portable Assemblies!
     using System.Reflection;
+#endif
 
     using AssetManagerPackage;
 
@@ -33,19 +46,12 @@ namespace AssetPackage
         {
             this.Id = AssetManager.Instance.registerAssetInstance(this, this.Class);
 
-            //! NOTE Unlike the JavaScript and Typescript versions (using a setTimeout) registration will not get triggered during publish in the AssetManager constructor.
-            //
-            //testSubscription = pubsubz.subscribe("EventSystem.Init", (topics, data) =>
-            //{
-            //This code fails in TypeScript (coded there as 'this.Id') as this points to the method and not the Asset.
-            //Console.WriteLine("[{0}].{1}: {2}", this.Id, topics, data);
-            //});
-
             //! List Embedded Resources.
             //foreach (String name in Assembly.GetCallingAssembly().GetManifestResourceNames())
             //{
             //    Console.WriteLine("{0}", name);
             //}
+
             String xml = VersionAndDependencies();
             if (!String.IsNullOrEmpty(xml))
             {
@@ -53,7 +59,7 @@ namespace AssetPackage
             }
             else
             {
-                Log("{0} VersionInfo is missing", GetType().Name);
+                Log(Severity.Verbose, "{0} VersionInfo is missing", GetType().Name);
             }
         }
 
@@ -214,40 +220,6 @@ namespace AssetPackage
             private set;
         }
 
-#warning experimental code
-
-
-        //private Assembly AssetAssembly
-        //{
-        //    get
-        //    {
-        //        // See https://gist.github.com/garyjohnson/2464327
-        //        Type rt = Type.GetType("IReflectableType");
-
-        //        if (rt != null)
-        //        {
-        //            Object rti = Convert.ChangeType(GetType(), rt);
-
-        //            MethodInfo mi = rti.GetType().GetMethod("GetTypeInfo");
-        //            if (mi != null)
-        //            {
-        //                Object ti = mi.Invoke(this, new Object[] { });
-
-        //                return ti.GetType().GetProperty("Assembly").GetValue(ti, new Object[] { }) as Assembly;
-        //            }
-        //            else
-        //            {
-        //                //mimic GetType().Assembly.GetManifestResourceStream(path))
-        //                //Assembly.GetAssembly(GetType());
-        //                // Mimin Assembly.GetExcutingAssembly.
-        //                //return typeof(Assembly).GetMethod("GetExecutingAssembly").Invoke(this, new Object[] { }) as Assembly;
-        //                return typeof(Assembly).GetMethod("GetAssembly", new Type[] { typeof(Type) }).Invoke(this, new Object[] { GetType() }) as Assembly;
-        //            }
-        //        }
-        //        return null;
-        //    }
-        //}
-
         #endregion Properties
 
         #region Methods
@@ -256,26 +228,28 @@ namespace AssetPackage
         /// Logs.
         /// </summary>
         ///
-        /// <param name="format"> Describes the format to use. </param>
+        /// <param name="severity"> The severity. </param>
+        /// <param name="format">   Describes the format to use. </param>
         /// <param name="args">     A variable-length parameters list containing
         ///                         arguments. </param>
-        public void Log(String format, params object[] args)
+        public void Log(Severity severity, String format, params object[] args)
         {
-            Log(String.Format(format, args));
+            Log(severity, String.Format(format, args));
         }
 
         /// <summary>
         /// Logs.
         /// </summary>
         ///
-        /// <param name="msg"> The message. </param>
-        public void Log(String msg)
+        /// <param name="severity"> The severity. </param>
+        /// <param name="msg">      The message. </param>
+        public void Log(Severity severity, String msg)
         {
             logger = getInterface<ILog>();
 
             if (logger != null)
             {
-                logger.Log(msg);
+                logger.Log(severity, msg);
             }
         }
 
@@ -445,9 +419,9 @@ namespace AssetPackage
         /// </returns>
         internal String VersionAndDependencies()
         {
-            // Not PCL
+            // Not compatible with PCL
             // 
-            //foreach (String res in GetType().Assembly.GetManifestResourceNames())
+            //foreach (String res in GetType().Assembly().GetManifestResourceNames())
             //{
             //    Debug.WriteLine(res);
             //}
@@ -458,11 +432,12 @@ namespace AssetPackage
             String xml = GetEmbeddedResource(GetType().Namespace, String.Format("Resources.{0}.VersionAndDependencies.xml", GetType().Name));
 
             //{
-            //    // http://stackoverflow.com/questions/26348663/load-embedded-xml-in-xamarin-c
-            //    IEmbeddedResource er = getInterface<IEmbeddedResource>();
-            //    String path = er.RetrieveResource(String.Format("Resources.{0}.VersionAndDependencies.xml", GetType().Name));
+            // Load- embedded resource in-xamarin.
+            // 
+            // IEmbeddedResource er = getInterface<IEmbeddedResource>();
+            // String path = er.RetrieveResource(String.Format("Resources.{0}.VersionAndDependencies.xml", GetType().Name));
 
-            //    xml = er.RetrieveResource(path);
+            // xml = er.RetrieveResource(path);
             //}
 
             return String.IsNullOrEmpty(xml) ? String.Empty : xml;
@@ -498,14 +473,14 @@ namespace AssetPackage
             //using (Stream stream = Assembly.GetAssembly(GetType()).GetManifestResourceStream(path))
 
             // Console.WriteLine("Loading Resources: {0}",path);
-#if PORTABLE
-            //! 2) Fails to compile on non portable projects as GetTypeInfo is missing. 
-            //!    GetType.Assembly does not exits in portable projects.
-            using (Stream stream = GetType().GetTypeInfo().Assembly.GetManifestResourceStream(path))
-#else
-            //! 3) Fail to compile on Unity3D/WinPhone (getAssembly fails) but the code works!
-            using (Stream stream = GetType().Assembly.GetManifestResourceStream(path))
-#endif
+            //#if PORTABLE
+            //            //! 2) Fails to compile on non portable projects as GetTypeInfo is missing. 
+            //            //!    GetType.Assembly does not exits in portable projects.
+            //            using (Stream stream = GetType().GetTypeInfo().Assembly.GetManifestResourceStream(path))
+            //#else
+            //            //! 3) Fail to compile on Unity3D/WinPhone (getAssembly fails) but the code works!
+            using (Stream stream = GetType().Assembly().GetManifestResourceStream(path))
+            //#endif
             {
                 if (stream != null)
                 {
@@ -544,28 +519,5 @@ namespace AssetPackage
         }
 
         #endregion Methods
-
-        #region Nested Types
-
-        /// <summary>
-        /// A string writer utf-8.
-        /// </summary>
-        ///
-        /// <remarks>
-        /// Fix-up for XDocument Serialization defaulting to utf-16.
-        /// </remarks>
-        internal class StringWriterUtf8 : StringWriter
-        {
-            #region Properties
-
-            public override Encoding Encoding
-            {
-                get { return Encoding.UTF8; }
-            }
-
-            #endregion Properties
-        }
-
-        #endregion Nested Types
     }
 }
