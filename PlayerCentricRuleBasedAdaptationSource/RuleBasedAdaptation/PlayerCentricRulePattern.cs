@@ -93,7 +93,8 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         {
             foreach (String metricName in Metric.Keys)
             {
-                Console.WriteLine("metric: " + metricName);
+                //TODO: add log
+                //Console.WriteLine("metric: " + metricName);
             }
         }
 
