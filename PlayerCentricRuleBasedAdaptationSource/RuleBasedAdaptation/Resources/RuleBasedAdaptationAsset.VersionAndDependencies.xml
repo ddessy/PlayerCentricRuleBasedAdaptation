@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <version>
   <id>rulebasedadaptationasset</id>
-  <major>1</major>
-  <minor>2</minor>
+  <major>2</major>
+  <minor>1</minor>
   <build>3</build>
   <revision></revision>
   <maturity>beta</maturity>
