@@ -185,7 +185,7 @@ During playing time, monitoring of registered metric can be canceled by calling 
 
 
 ## Deployment
-The source code of the asset together with its Visual studio solution can be found [here](https://github.com/ddessy/PlayerCentricRuleBasedAdaptation/tree/master/PlayerCentricRuleBasedAdaptationSource). After building of the solution the resulted dlls files have to be imported to the Unity project.
+The source code of the asset together with its Visual studio solution can be found [here](https://github.com/ddessy/PlayerCentricRuleBasedAdaptation/tree/master/PlayerCentricRuleBasedAdaptationSource). After building the solution the resulted dll files have to be imported to the Unity project.
 
 ## Unit tests
 The source code of all unit tests can be found [here](https://github.com/ddessy/PlayerCentricRuleBasedAdaptation/tree/master/PlayerCentricRuleBasedAdaptationSource/UnitTestRuleBasedAdaptation). They can be executed with the test tool of the Visual Studio.
