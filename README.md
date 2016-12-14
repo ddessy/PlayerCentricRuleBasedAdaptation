@@ -37,30 +37,21 @@ Next, game metrics values can be send to the asset by calling its method for rec
 <img src="https://raw.githubusercontent.com/ddessy/PlayerCentricRuleBasedAdaptation/master/Docs/fig1.png"
 alt= "Fig.1: Two occurrences of the 'GSR mean pattern' found at times t1=15s (points in red color) and t2=20s (points with yellow color)" width="599")
 </p>
-<<<<<<< HEAD
 <p align="center">
 <i>
 Fig.1: Two occurrences of the 'GSR mean pattern' found at times t1=15s (points in red color) and t2=20s (points with yellow color).
 </i>
-=======
-<p align="center"><i>
-Fig.1: Two occurrences of the 'GSR mean pattern' found at times t1=15s (points in red color) and t2=20s (points with yellow color).
->>>>>>> 31ab3bc654f9647ba0ae2c0e0610ceaa6f8fbeea
 </p>
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/ddessy/PlayerCentricRuleBasedAdaptation/master/Docs/fig2.png"
 alt= "Fig.2: Two possible occurrences of the “Happy pattern” (pattern points are given in yellow)" width="599")
 </p>
-<<<<<<< HEAD
 <p align="center">
 <i>
 Fig.2: Two possible occurrences of the “Happy pattern” (pattern points are given in yellow).
 </i>
 </p>
-=======
-<p align="center"><i>Fig.2: Two possible occurrences of the “Happy pattern” (pattern points are given in yellow).</i></p>
->>>>>>> 31ab3bc654f9647ba0ae2c0e0610ceaa6f8fbeea
 During playing time, monitoring of registered metric can be canceled by calling the `registerMetric` method with the metric name, which will incur stopping the monitoring of this metric and evaluation of its features. For a monitored metric, any of its patterns or rules set for observing can be stopped by calling the `forgetPatternRule` method.
 
 ## Asset API
