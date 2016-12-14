@@ -55,29 +55,31 @@ Fig.2: Two possible occurrences of the “Happy pattern” (pattern points are g
 During playing time, monitoring of registered metric can be canceled by calling the `registerMetric` method with the metric name, which will incur stopping the monitoring of this metric and evaluation of its features. For a monitored metric, any of its patterns or rules set for observing can be stopped by calling the `forgetPatternRule` method.
 
 ## Asset API
+
+- selects the metric features the developer is interested in
 ```java
 public bool RegisterMetric(String metricName)
-selects the metric features the developer is interested in
 ```
+- sets a rule or pattern
 ```java
-public bool RegisterPattern (String patternName, String metricName, String featureName, String timeInterval, String valuesRule)
-sets a rule or pattern
+public bool RegisterPattern (String patternName, String metricName, String featureName,
+                             String timeInterval, String valuesRule)
 ```
+- the method that should be overwritten
 ```java
 public override Object PatternEventHandler(Object patternInput, Object gameObject)
-the method that should be overwritten
 ```
+- unregister a rule or pattern
 ```java
 public bool UnregisterPattern(String patternName)
-unregister a rule or pattern
 ```
+- sets/resets the asset timer at any time (the time is given in milliseconds) in order to synchronize it to the game engine
 ```java
 public void SetGlobalTime(int synchronizationTime)
-sets/resets the asset timer at any time (the time is given in milliseconds) in order to synchronize it to the game engine
 ```
+- sets the moving average time window
 ```java
 public void SetTimeWindow(int milliseconds)
-sets the moving average time window
 ```
 
 ## Asset integration steps
@@ -153,25 +155,36 @@ testMetricPattern.RegisterPattern("GSR mean pattern", "GSR", "average", "t t+300
 ```
 - Pattern example with relative value x of the moving average using absolute time (at the second, fifth and the tenth minute), i.e.
 ```java
- { name=”Happy pattern”, metric=”happiness”, feature=”moving average”, time=”120000 300000 600000”, values=”x x+10 x-20” }
+ { name=”Happy pattern”, metric=”happiness”, feature=”moving average”,
+   time=”120000 300000 600000”, values=”x x+10 x-20” }:
  ```
  ```java
- testMetricPattern.RegisterPattern("Happy pattern", "happiness", "”moving average", "120000 300000 600000", "x x+10 x-20");
+ testMetricPattern.RegisterPattern("Happy pattern", "happiness", "moving average",
+                                   "120000 300000 600000", "x x+10 x-20");
  ```
 - Rule example for checking if the metric about quiz result is between 20 and 30 points (GT stands for Greater Than, LT stands for Less Than) between the third minute (after 180000 ms) and before the eighth minute (before 480000 ms):
+
  ```java
- { name=”A quiz points rule”, metric=”Quiz result”, feature=”none”, time=”GT(180000) LT(480000)”, values=”GT(20) AND LT(30)” }
+ { name=”A quiz points rule”, metric=”Quiz result”, feature=”none”,
+   time=”GT(180000) LT(480000)”, values=”GT(20) AND LT(30)” }
  ```
  ```java
-  testMetricPattern.RegisterPattern("A quiz points rule", "Quiz result", "none", "GT(180000) LT(480000)", "GT(20) AND LT(30)");
+  testMetricPattern.RegisterPattern("A quiz points rule", "Quiz result", "none",
+                                    "GT(180000) LT(480000)", "GT(20) AND LT(30)");
   ```
 Note that using relative time moments after given moment of time t means checking for an occurrence of the specified metric/feature vector at every moment after t, when a new value of the metric is sent to the asset, i.e. the check is repeated always after t until the metric is deregistered for monitoring. If the game developer needs to specify a cycling check of a rule for given time period, he/she can do it by using a cycle construction as follows:
-```
-Rule example for starting to check each one minute 10 min after the start of the game within the next 5 min for the condition if the number of shots metric is greater than 100:
-```
+
+`Rule example for starting to check each one minute 10 min after the start of the game within the next 5 min for the condition if the number of shots metric is greater than 100:`
+
 ```java
-{ name=”A shot rule”, metric=”No of shots”, feature=”none”, cycletime=”GT(600000) 6000 LT(900000)”, values=”GT(100)” } 
+{ name=”A shot rule”, metric=”No of shots”, feature=”none”,
+  cycletime=”GT(600000) 6000 LT(900000)”, values=”GT(100)” }
 ```
+
+During playing time, monitoring of registered metric can be canceled by calling the  `public bool RegisterMetric(String metric)` method with the metric name, which will incur stopping the monitoring of this metric and evaluation of its features. For a monitored metric, any of its patterns or rules set for observing can be stopped by calling the `public bool UnregisterPattern(String patternName)` method.
+
+## Unit tests
+The source code of all unit tests can be found [here](https://github.com/ddessy/PlayerCentricRuleBasedAdaptation/tree/master/PlayerCentricRuleBasedAdaptationSource/UnitTestRuleBasedAdaptation). They can be executed with the test tool of the Visual Studio.
 
 ## Examples of Use in Games
 
