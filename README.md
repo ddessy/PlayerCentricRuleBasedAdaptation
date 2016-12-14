@@ -183,6 +183,10 @@ Note that using relative time moments after given moment of time t means checkin
 
 During playing time, monitoring of registered metric can be canceled by calling the  `public bool RegisterMetric(String metric)` method with the metric name, which will incur stopping the monitoring of this metric and evaluation of its features. For a monitored metric, any of its patterns or rules set for observing can be stopped by calling the `public bool UnregisterPattern(String patternName)` method.
 
+
+## Deployment
+The source code of the asset together with its Visual studio solution can be found [here](https://github.com/ddessy/PlayerCentricRuleBasedAdaptation/tree/master/PlayerCentricRuleBasedAdaptationSource). After building of the solution the resulted dlls files have to be imported to the Unity project.
+
 ## Unit tests
 The source code of all unit tests can be found [here](https://github.com/ddessy/PlayerCentricRuleBasedAdaptation/tree/master/PlayerCentricRuleBasedAdaptationSource/UnitTestRuleBasedAdaptation). They can be executed with the test tool of the Visual Studio.
 
