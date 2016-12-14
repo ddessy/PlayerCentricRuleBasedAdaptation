@@ -170,7 +170,7 @@ Note that using relative time moments after given moment of time t means checkin
 Rule example for starting to check each one minute 10 min after the start of the game within the next 5 min for the condition if the number of shots metric is greater than 100:
 ```
 ```java
-{ name=”A shot rule”, metric=”No of shots”, feature=”none”, cycletime=”GT(600000) 6000 LT(900000)”, values=”GT(100)” }
+{ name=”A shot rule”, metric=”No of shots”, feature=”none”, cycletime=”GT(600000) 6000 LT(900000)”, values=”GT(100)” } 
 ```
 
 ## Examples of Use in Games
