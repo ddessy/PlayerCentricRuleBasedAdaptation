@@ -56,28 +56,28 @@ During playing time, monitoring of registered metric can be canceled by calling 
 
 ## Asset API
 
-- selects the metric features the developer is interested in
+- Select the metric features the developer is interested in
 ```java
 public bool RegisterMetric(String metricName)
 ```
-- sets a rule or pattern
+- Set a rule or pattern
 ```java
 public bool RegisterPattern (String patternName, String metricName, String featureName,
                              String timeInterval, String valuesRule)
 ```
-- the method that should be overwritten
+- The method `PatternEventHandler` should be overwritten
 ```java
 public override Object PatternEventHandler(Object patternInput, Object gameObject)
 ```
-- unregister a rule or pattern
+- Unregister a rule or pattern
 ```java
 public bool UnregisterPattern(String patternName)
 ```
-- sets/resets the asset timer at any time (the time is given in milliseconds) in order to synchronize it to the game engine
+- Set/Reset the asset timer at any time (the time is given in milliseconds) in order to synchronize it to the game engine
 ```java
 public void SetGlobalTime(int synchronizationTime)
 ```
-- sets the moving average time window
+- Set the moving average time window
 ```java
 public void SetTimeWindow(int milliseconds)
 ```
@@ -96,7 +96,7 @@ is abstract and it should be overwritten for changing game features when the pat
 
 The asset integration process includes following steps:
 
-1. Download the zip file `“PlayerCentricRuleBasedAdaptationDlls.zip”` with dll files implementing the asset functionality;
+1. Download the zip file `“PlayerCentricRuleBasedAdaptationDlls.rar”` ( from [here](https://github.com/ddessy/PlayerCentricRuleBasedAdaptation/blob/master/PlayerCentricRuleBasedAdaptationBin/PlayerCentricRuleBasedAdaptationBin.rar)) with dll files implementing the asset functionality;
 2. Copy the asset dll archive file in a folder in your Unity project and uncompressed it there(see fig. 4 [here](https://github.com/ddessy/PlayerCentricRuleBasedAdaptation/blob/master/Docs/Player-centric%20rule-and-pattern-based%20adaptation%20asset-integration%20tutorial-ver0.4.pdf))
 3. Import dll files to your Unity project (see fig. 5 and fig.6 [here](https://github.com/ddessy/PlayerCentricRuleBasedAdaptation/blob/master/Docs/Player-centric%20rule-and-pattern-based%20adaptation%20asset-integration%20tutorial-ver0.4.pdf))
 4. Add dll files to the references of your project in Visual Studio or other IDE that you use for your
