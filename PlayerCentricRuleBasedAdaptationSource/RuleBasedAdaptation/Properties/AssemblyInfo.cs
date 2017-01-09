@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("RuleBasedAdaptation")]
+[assembly: AssemblyTitle("RuleBasedAdaptationAsset")]
 [assembly: AssemblyDescription("The Player-centric rule-and-pattern-based adaptation asset uses metrics of player's performance, emotional status and/or playing style for realization of dynamical adaptation of various game features such as adaptation of player-driven game tasks and/or game assistance, dynamic adjustment of task difficulty, and/or adjustment of properties of audiovisual content and effects.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Sofia University")]
-[assembly: AssemblyProduct("RuleBasedAdaptation")]
+[assembly: AssemblyProduct("RuleBasedAdaptationAsset")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
