@@ -46,7 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PlayerCentricStatisticExtractor.cs" />
+    <Compile Include="PlayerCentricRuleBasedAdaptationAsset.cs" />
     <Compile Include="PlayerCentricStatisticExtractorDefault.cs" />
     <Compile Include="PlayerCentricRulePattern.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -54,9 +54,9 @@
   <ItemGroup>
     <Content Include="Resources\RuleBasedAdaptationAsset.VersionAndDependencies.xml" />
   </ItemGroup>
-  <ItemGroup>
+  <!--<ItemGroup>
     <Analyzer Include="..\..\..\unity\Roll a Ball\Assets\Rage\RuleBasedAdaptation.dll" />
-  </ItemGroup>
+  </ItemGroup>-->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
