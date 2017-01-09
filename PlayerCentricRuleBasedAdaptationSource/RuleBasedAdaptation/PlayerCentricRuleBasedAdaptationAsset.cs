@@ -25,7 +25,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
     /// <summary>
     /// Define Player-centric rule-and-pattern-based adaptation asset class.
     /// </summary>
-    public abstract class PlayerCentricStatisticExtractor : BaseAsset
+    public abstract class PlayerCentricRuleBasedAdaptationAsset : BaseAsset
     {
         #region Fields
         /// <summary>
@@ -143,7 +143,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         #endregion Fields
 
         #region Constructors
-        protected PlayerCentricStatisticExtractor()
+        protected PlayerCentricRuleBasedAdaptationAsset()
         {
             Patterns = new PlayerCentricRulePattern();
 
