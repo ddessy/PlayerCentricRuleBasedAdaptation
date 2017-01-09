@@ -73,14 +73,12 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         {
             if (Metric.ContainsKey(metricName))
             {
-                //TODO: add log
-                //Console.WriteLine("The metric does already exist.");
+                AssetManagerPackage.AssetManager.Instance.Log(AssetPackage.Severity.Error, "The metric does already exist.");
                 return false;
             }
 
             Metric.Add(metricName, new Dictionary<int, int>());
-            //TODO: add log
-            //Console.WriteLine("The metric is registered correctly.");
+            AssetManagerPackage.AssetManager.Instance.Log(AssetPackage.Severity.Information, "The metric is registered correctly.");
             return true;
         }
 
@@ -93,8 +91,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         {
             foreach (String metricName in Metric.Keys)
             {
-                //TODO: add log
-                //Console.WriteLine("metric: " + metricName);
+                AssetManagerPackage.AssetManager.Instance.Log(AssetPackage.Severity.Information, "metric: " + metricName);
             }
         }
 
@@ -137,8 +134,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         {
             if (PatternList.ContainsKey(patternName))
             {
-                //TODO: add log
-                //Console.WriteLine("The pattern name: " + patternName + " does already exist.");
+                AssetManagerPackage.AssetManager.Instance.Log(AssetPackage.Severity.Warning, "The pattern name: " + patternName + " does already exist.");
                 return false;
             }
 
@@ -161,7 +157,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 
             if (isPatternDefinitionExist && (PatternList.Count > 0))
             {
-                Console.WriteLine("The pattern definition does already exist.");
+                AssetManagerPackage.AssetManager.Instance.Log(AssetPackage.Severity.Warning, "The pattern definition does already exist.");
                 return false;
             }
 
@@ -171,8 +167,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             }
 
             PatternList.Add(patternName, patternDefinition);
-            //TODO: add log
-            //Console.WriteLine("The pattern is registered correctly.");
+            AssetManagerPackage.AssetManager.Instance.Log(AssetPackage.Severity.Information, "The pattern is registered correctly.");
             return true;
         }
 
@@ -452,8 +447,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                 }
             }
 
-            //TODO: add log file
-            //Console.WriteLine("The pattern is not supported.");
+            AssetManagerPackage.AssetManager.Instance.Log(AssetPackage.Severity.Warning, "The pattern is not supported.");
             return null;
         }
 
