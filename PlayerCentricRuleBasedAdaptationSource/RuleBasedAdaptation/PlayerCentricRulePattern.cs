@@ -381,13 +381,52 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             return true;
         }
 
+
+        //Simplified version of a string expression evaluation.
+        //The method support evaluation of expressions following the format: \d+('+' | '-' | '/' | '*')\d+(('+' | '-' )\d)*
         public static Object Evaluate(string expression)
         {
-            return new System.Xml.XPath.XPathDocument(new System.IO.StringReader("<r/>"))
-                                       .CreateNavigator()
-                                       .Evaluate(new System.Text.RegularExpressions.Regex(@"([\+\-\*])").Replace(expression, " ${1} ")
-                                                                                                        .Replace("/", " div ")
-                                                                                                        .Replace("%", " mod "));
+            expression = expression.Replace(" ", string.Empty);
+            String tmpExpression = expression;
+            string[] operands = expression.Split('+', '-', '/', '*');
+            int result = 0;
+            Int32.TryParse(operands[0], out result);
+            for (int i = 0; i < operands.Count() - 1; i++)
+            {
+                Char mathOperator = tmpExpression[tmpExpression.IndexOf(operands[i]) + 1];
+                tmpExpression = ReplaceFirst(expression, operands[i], "");
+                if ('+'.Equals(mathOperator))
+                {
+                    result += Int32.Parse(operands[i + 1]);
+                }
+
+                if ('-'.Equals(mathOperator))
+                {
+                    result -= Int32.Parse(operands[i + 1]);
+                }
+
+
+                if ('*'.Equals(mathOperator))
+                {
+                    result *= Int32.Parse(operands[i + 1]);
+                }
+
+                if ('/'.Equals(mathOperator))
+                {
+                    result /= Int32.Parse(operands[i + 1]);
+                }
+            }
+            return result;
+        }
+
+        static string ReplaceFirst(string text, string oldString, string newString)
+        {
+            int pos = text.IndexOf(oldString);
+            if (pos < 0)
+            {
+                return text;
+            }
+            return text.Substring(0, pos) + newString + text.Substring(pos + oldString.Length);
         }
 
         /*Pattern type is defined depending on 'time' and 'values'.
