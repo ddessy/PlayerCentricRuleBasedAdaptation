@@ -330,7 +330,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                 else if (RELATIVE_PATTERN.Equals(valueTypePattern, StringComparison.CurrentCulture))
                 {
                     String[] patternValueStrArray = GetStrArray(patternValues);
-                    int firstValue = -1;
+                    int firstValue = metricValues.First().Value;
                     if (i > 0 && firstValue > -1)
                     {
                         int patternValueInt = (int)Evaluate(patternValueStrArray[i].Replace(@"x", @firstValue.ToString()));
@@ -339,7 +339,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                             return false;
                         }
                     }
-                    else if (i == 0)
+                    else if (i == 1)
                     {
                         firstValue = valueForTime;
                     }
@@ -364,16 +364,74 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                                        .Replace("ANY(", "")
                                        .Replace("GT(", value + ">")
                                        .Replace("LT(", value + "<")
-                                       .Replace("EQ(", value + "==")
+                                       .Replace("EQ(", value + "=")
                                        .Replace(")", "")
-                                       .Replace("AND", "and")
-                                       .Replace("OR", "or");
-            if (!(Boolean)Evaluate(patternValue))
+                                       .Replace("AND", "&")
+                                       .Replace("OR", "|");
+
+            if (patternValue.Contains(">") || patternValue.Contains("<") || patternValue.Contains("="))
             {
-                return false;
+                string[] operandsAnd = patternValue.Split('&');
+                string[] operandsOr = patternValue.Split('|');
+                bool result = false;
+
+                if (operandsAnd.Count() > 1)
+                {
+                    foreach (string expressionItem in operandsAnd)
+                    {
+                        if (EvaluateBool(expressionItem) == false)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            result = true;
+                        }
+                    }
+                }
+
+                if (operandsOr.Count() > 1)
+                {
+                    foreach (string expressionItem in operandsOr)
+                    {
+                        if (EvaluateBool(expressionItem) == true)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            result = false;
+                        }
+                    }
+                }
+
+                if(operandsAnd.Count() == 1 && operandsOr.Count() == 1)
+                {
+                    return EvaluateBool(operandsAnd[0]);
+                }
+
+                return result;
             }
 
             return true;
+        }
+
+        public static bool EvaluateBool(string expression)
+        {
+            string[] operands = expression.Split('>', '<', '=');
+            if(expression.Contains(">"))
+            {
+                return Int32.Parse(operands[0]) > Int32.Parse(operands[1]);
+            }
+            else if (expression.Contains("<"))
+            {
+                return Int32.Parse(operands[0]) < Int32.Parse(operands[1]);
+            }
+            else if (expression.Contains("="))
+            {
+                return Int32.Parse(operands[0]) == Int32.Parse(operands[1]);
+            }
+            return false;
         }
 
 
@@ -388,25 +446,25 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             Int32.TryParse(operands[0], out result);
             for (int i = 0; i < operands.Count() - 1; i++)
             {
-                Char mathOperator = tmpExpression[tmpExpression.IndexOf(operands[i]) + 1];
+                String mathOperator = tmpExpression.Substring(tmpExpression.IndexOf(operands[i]) + operands[i].Length, 1);
                 tmpExpression = ReplaceFirst(expression, operands[i], "");
-                if ('+'.Equals(mathOperator))
+                if ("+".Equals(mathOperator))
                 {
                     result += Int32.Parse(operands[i + 1]);
                 }
 
-                if ('-'.Equals(mathOperator))
+                if ("-".Equals(mathOperator))
                 {
                     result -= Int32.Parse(operands[i + 1]);
                 }
 
 
-                if ('*'.Equals(mathOperator))
+                if ("*".Equals(mathOperator))
                 {
                     result *= Int32.Parse(operands[i + 1]);
                 }
 
-                if ('/'.Equals(mathOperator))
+                if ("/".Equals(mathOperator))
                 {
                     result /= Int32.Parse(operands[i + 1]);
                 }
