@@ -38,11 +38,13 @@ namespace UnitTestRuleBasedAdaptation
             //act
             //add several patterns
             pattern.RegisterPattern("GSR mean pattern 1", "GSR", "none", "ALL(GT(180000) AND LT(480000))", "GT(20) AND LT(200)");
-            pattern.RegisterPattern("GSR mean pattern 2", "GSR", "average 0", "t t+3000 t+4000 t+9000", "16 20 24 20");
+            pattern.RegisterPattern("GSR mean pattern 2", "GSR", "average 0", "3000 6000 7000 12000", "x x+4 x+8 x+4");
             pattern.RegisterPattern("GSR mean pattern 3", "GSR", "none", "ALL(GT(180200) AND LT(470000))", "GT(100)");
             pattern.RegisterPattern("GSR mean pattern 4", "GSR", "average 1", "t t+3000 t+6000 t+9000", "16 20 24 20");
             pattern.RegisterPattern("GSR mean pattern 5", "GSR", "average 2", "3000 6000 9000", "20 24 20");
             pattern.RegisterPattern("Exception", "GSR Exception", "average 2", "3000 6000  9000", "20 24 20");
+            pattern.RegisterPattern("GSR examine equals milliseconds", "GSR equals", "none", "ALL(EQ(180))", "GT(100)");
+            pattern.RegisterPattern("GSR examine equals value", "GSR equals", "none", "ALL(GT(180))", "EQ(100)");
         }
 
         [TestMethod]
@@ -54,10 +56,11 @@ namespace UnitTestRuleBasedAdaptation
             //assert
             List<String> properResult = new List<String> {
                                                            "GSR",
-                                                           "GSR Exception"
+                                                           "GSR Exception",
+                                                           "GSR equals"
                                                           };
 
-            Assert.IsTrue(realResult.Count == properResult.Count && !realResult.Except(properResult).Any());
+            Assert.IsTrue(realResult.Count == properResult.Count && !(realResult.Except(properResult).Any()));
         }
 
         [TestMethod]
@@ -77,6 +80,87 @@ namespace UnitTestRuleBasedAdaptation
             List<String> expectedResult = new List<String> {
                                                            "GSR mean pattern 1",
                                                            "GSR mean pattern 3"
+                                                          };
+            Assert.IsTrue(realResult.Count == expectedResult.Count && !realResult.Except(expectedResult).Any());
+        }
+
+        [TestMethod]
+        public void FindPattern_TestEQPatternMatched_OneRulePatternsAreSuccessful()
+        {
+            //act
+            //save data for the metric "GSR equals"
+            pattern.SetMetricValue("GSR equals", 120, 180);
+            pattern.SetMetricValue("GSR equals", 110, 181);
+            pattern.SetMetricValue("GSR equals", 105, 182);
+
+
+            List<string> realResult = pattern.FindPattern("GSR equals");
+
+            //assert
+            //define expected result
+            List<String> expectedResult = new List<String> {
+                                                           "GSR examine equals milliseconds"
+                                                          };
+            Assert.IsTrue(realResult.Count == expectedResult.Count && !realResult.Except(expectedResult).Any());
+        }
+
+        [TestMethod]
+        public void FindPattern_TestEQPatternMatched_AllRulePatternsAreSuccessful()
+        {
+            //act
+            //save data for the metric "GSR equals"
+            pattern.SetMetricValue("GSR equals", 100, 183);
+            pattern.SetMetricValue("GSR equals", 100, 181);
+            pattern.SetMetricValue("GSR equals", 105, 180);
+
+
+            List<string> realResult = pattern.FindPattern("GSR equals");
+
+            //assert
+            //define expected result
+            List<String> expectedResult = new List<String> {
+                                                           "GSR examine equals milliseconds",
+                                                           "GSR examine equals value"
+                                                          };
+            Assert.IsTrue(realResult.Count == expectedResult.Count && !realResult.Except(expectedResult).Any());
+        }
+
+        [TestMethod]
+        public void FindPattern_TestRelativeTimePatternMatched_AllRulePatternsAreSuccessful()
+        {
+            //act
+            //save data for the metric "GSR equals"
+            pattern.SetMetricValue("GSR", 16, 3000);
+            pattern.SetMetricValue("GSR", 20, 6000);
+            pattern.SetMetricValue("GSR", 24, 9000);    
+            pattern.SetMetricValue("GSR", 20, 12000);
+
+            List<string> realResult = pattern.FindPattern("GSR");
+
+            //assert
+            //define expected result
+            List<String> expectedResult = new List<String> {
+                                                           "GSR mean pattern 4"
+                                                          };
+            Assert.IsTrue(realResult.Count == expectedResult.Count && !realResult.Except(expectedResult).Any());
+        }
+
+        [TestMethod]
+        public void FindPattern_TestRelativeValuePatternMatched_AllRulePatternsAreSuccessful()
+        {
+            //act
+            //save data for the metric "GSR equals"
+            pattern.SetMetricValue("GSR", 16, 3000);
+            pattern.SetMetricValue("GSR", 20, 6000);
+            pattern.SetMetricValue("GSR", 24, 7000);
+            pattern.SetMetricValue("GSR", 20, 12000);
+
+            List<string> realResult = pattern.FindPattern("GSR");
+
+            //assert
+            //define expected result
+            List<String> expectedResult = new List<String> {
+                                                           "GSR mean pattern 2"
                                                           };
             Assert.IsTrue(realResult.Count == expectedResult.Count && !realResult.Except(expectedResult).Any());
         }
