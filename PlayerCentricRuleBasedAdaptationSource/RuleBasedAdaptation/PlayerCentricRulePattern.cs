@@ -330,7 +330,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                 else if (RELATIVE_PATTERN.Equals(valueTypePattern, StringComparison.CurrentCulture))
                 {
                     String[] patternValueStrArray = GetStrArray(patternValues);
-                    int firstValue = metricValues.First().Value;
+                    int firstValue = -1;
                     if (i > 0 && firstValue > -1)
                     {
                         int patternValueInt = (int)Evaluate(patternValueStrArray[i].Replace(@"x", @firstValue.ToString()));
@@ -339,7 +339,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                             return false;
                         }
                     }
-                    else if (i == 1)
+                    else if (i == 0)
                     {
                         firstValue = valueForTime;
                     }
@@ -446,25 +446,25 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             Int32.TryParse(operands[0], out result);
             for (int i = 0; i < operands.Count() - 1; i++)
             {
-                String mathOperator = tmpExpression.Substring(tmpExpression.IndexOf(operands[i]) + operands[i].Length, 1);
+                Char mathOperator = tmpExpression[tmpExpression.IndexOf(operands[i]) + 1];
                 tmpExpression = ReplaceFirst(expression, operands[i], "");
-                if ("+".Equals(mathOperator))
+                if ('+'.Equals(mathOperator))
                 {
                     result += Int32.Parse(operands[i + 1]);
                 }
 
-                if ("-".Equals(mathOperator))
+                if ('-'.Equals(mathOperator))
                 {
                     result -= Int32.Parse(operands[i + 1]);
                 }
 
 
-                if ("*".Equals(mathOperator))
+                if ('*'.Equals(mathOperator))
                 {
                     result *= Int32.Parse(operands[i + 1]);
                 }
 
-                if ("/".Equals(mathOperator))
+                if ('/'.Equals(mathOperator))
                 {
                     result /= Int32.Parse(operands[i + 1]);
                 }
