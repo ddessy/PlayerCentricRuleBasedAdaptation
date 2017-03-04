@@ -151,11 +151,6 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         #endregion Constructors
 
         #region Properties
-        public int GetTimeWindow()
-        {
-            return TimeWindow;
-        }
-
         public void SetTimeWindow(int milliseconds)
         {
             this.TimeWindow = milliseconds;
@@ -177,22 +172,18 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             return Patterns.SetMetricValue(metricName, value);
         }
 
-        public List<String> SetMetricValue(String metricName, int value, int miliseconds)
+        public void SetMetricValue(String metricName, int value, int milliseconds)
         {
-            return Patterns.SetMetricValue(metricName, value, miliseconds);
+            Patterns.SetMetricValue(metricName, value, milliseconds);
         }
 
         //Return all registered patterns.
-        public Dictionary<String, List<Object>> GetRegisterPattern()
+        public Dictionary<String, Pattern> GetRegisterPattern()
         {
-            return Patterns.GetRegisterPattern();
+            return Patterns.PatternList;
         }
 
-        //Return the current global time.
-        public int GetGlobalTime()
-        {
-            return GlobalTime;
-        }
+        
         #endregion Properties
 
         #region Methods
@@ -206,13 +197,20 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             Patterns.PrintRegisterMetrics();
         }
 
-        // Return true if the metric is registered correctly; False otherwise (if the pattern does already exist).
+        // Return true if the pattern is registered correctly; False otherwise (if the pattern does already exist).
         public bool RegisterPattern(String patternName, String metricName, String featureName, String timeInterval, String values)
         {
             return Patterns.RegisterPattern(patternName, metricName, featureName, timeInterval, values);
         }
 
-        // Return true if the metric is unregistered correctly; False otherwise (if the pattern does not already exist).
+        // Return true if the pattern is registered correctly; False otherwise (if the pattern does already exist).
+        // This type of pattern definition is valid only for absolute patterns.
+        public bool RegisterPattern(String patternName, String metricName, String featureName, String timeInterval, String values, FittingLine fittingLine)
+        {
+            return Patterns.RegisterPattern(patternName, metricName, featureName, timeInterval, values, fittingLine);
+        }
+
+        // Return true if the pattern is unregistered correctly; False otherwise (if the pattern does not already exist).
         public bool UnregisterPattern(String patternName)
         {
             return Patterns.UnregisterPattern(patternName);
@@ -221,10 +219,9 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         // Return true if the pattern is found in the signal record; False otherwise (if the pattern is not found).
         public List<String> FindPattern(String metricName)
         {
-            return Patterns.GetSuccefulPatternsForMetric(metricName);
+            return Patterns.GetSuccessfulPatternsForMetric(metricName);
         }
 
-        //Model_time_start is in milliseconds (usually zero).
         public void Start()
         {
             IsPaused = 0;

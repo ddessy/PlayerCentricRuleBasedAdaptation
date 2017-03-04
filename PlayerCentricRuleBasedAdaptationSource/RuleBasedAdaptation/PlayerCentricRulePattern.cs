@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -38,9 +39,9 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                 _metric = value;
             }
         }
-        private Dictionary<String, List<Object>> _patternList; // ENCAPSULATE FIELD
+        private Dictionary<String, Pattern> _patternList; // ENCAPSULATE FIELD
 
-        public Dictionary<String, List<Object>> PatternList
+        public Dictionary<String, Pattern> PatternList
         {
             get
             {
@@ -51,11 +52,16 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                 _patternList = value;
             }
         }
+
+        //Pattern for relative values (e.g. x x+4 x+8 x-4)
         private const String RELATIVE_PATTERN = "Relative Pattern";
+        //Pattern for absolute values (e.g. 2 5 100 12)
         private const String ABSOLUTE_PATTERN = "Absolute Pattern";
+        //Pattern for absolute values and a fitting line (e.g. 2 5 100 12 with confidence interval = 0.7 and confidence level = 0.8)
+        private const String ABSOLUTE_PATTERN_WITH_RANGE = "Absolute Pattern with range";
         //RULE_PATTERN is used only for modeling values, but not time
         private const String RULE_PATTERN = "Rule Pattern";
-        //RULE_ANY_PATTERN is used only for modeling time, but not values
+        //RULE_ANY_PATTERN is used only for modeling time, but not values (e.g. GT(180200) AND LT(470000))
         private const String RULE_ANY_PATTERN = "Rule Pattern for the last time value.";
         //RULE_ALL_PATTERN is used only for modeling time, but not values
         private const String RULE_ALL_PATTERN = "Rule Pattern for each one time value.";
@@ -66,7 +72,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         public PlayerCentricRulePattern()
         {
             Metric = new Dictionary<string, Dictionary<int, int>>();
-            PatternList = new Dictionary<string, List<Object>>();
+            PatternList = new Dictionary<string, Pattern>();
         }
 
         public bool RegisterMetric(String metricName)
@@ -104,19 +110,19 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                 metricValues.Add(DateTime.Now.Millisecond, value);
             }
 
-            return GetSuccefulPatternsForMetric(metricName);
+            return GetSuccessfulPatternsForMetric(metricName);
         }
 
-        public List<String> SetMetricValue(String metricName, int value, int miliseconds)
+        public List<String> SetMetricValue(String metricName, int value, int milliseconds)
         {
             Dictionary<int, int> metricValues = null;
 
             if (Metric.TryGetValue(metricName, out metricValues))
             {
-                metricValues.Add(miliseconds, value);
+                metricValues.Add(milliseconds, value);
             }
 
-            return GetSuccefulPatternsForMetric(metricName);
+            return GetSuccessfulPatternsForMetric(metricName);
         }
 
         public Dictionary<int, int> GetMetricValues(String metricName)
@@ -132,27 +138,29 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 
         public bool RegisterPattern(String patternName, String metricName, String featureName, String timeInterval, String values)
         {
+            Pattern patternDefinition = new Pattern( metricName, featureName, timeInterval, values );
+            return IsPatternRegister(patternName, metricName, patternDefinition);
+        }
+
+        private bool IsPatternRegister(string patternName, string metricName, Pattern patternDefinition)
+        {
             if (PatternList.ContainsKey(patternName))
             {
                 AssetManagerPackage.AssetManager.Instance.Log(AssetPackage.Severity.Warning, "The pattern name: " + patternName + " does already exist.");
                 return false;
             }
 
-            List<Object> patternDefinition = new List<Object> { metricName, featureName, timeInterval, values };
             bool isPatternDefinitionExist = true;
             int i = 0;
-            foreach (List<Object> patternValue in PatternList.Values)
+            foreach (Pattern patternValue in PatternList.Values)
             {
-                foreach (Object patternMember in patternValue)
+                if (!patternValue.Equals(patternDefinition))
                 {
-                    if (!patternMember.Equals(patternDefinition.ElementAt(i)))
-                    {
-                        isPatternDefinitionExist = false;
-                        break;
-                    }
-
-                    i++;
+                    isPatternDefinitionExist = false;
+                    break;
                 }
+
+                i++;
             }
 
             if (isPatternDefinitionExist && (PatternList.Count > 0))
@@ -171,18 +179,45 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             return true;
         }
 
+        public bool IsFittingLineDefinedCorrectly(FittingLine fittingLine)
+        {
+            if (fittingLine != null &&
+                (fittingLine.ConfidenceInterval > 1 ||
+                 fittingLine.ConfidenceInterval < -1 ||
+                 fittingLine.ConfidenceLevel > 1 ||
+                 fittingLine.ConfidenceLevel < 0))
+            {
+                AssetManagerPackage.AssetManager.Instance.Log(AssetPackage.Severity.Error, "The fitting line is not defined correctly.");
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool RegisterPattern(String patternName, String metricName, String featureName, String timeInterval, String values, FittingLine fittingLine)
+        {
+            if(!IsFittingLineDefinedCorrectly(fittingLine))
+            {
+                AssetManagerPackage.AssetManager.Instance.Log(AssetPackage.Severity.Error, "The fitting line for the pattern " + patternName + " is not defined correctly.");
+                return false;
+            }
+
+            Pattern patternDefinition = new Pattern( metricName, featureName, timeInterval, values, fittingLine );
+            return IsPatternRegister(patternName, metricName, patternDefinition);
+        }
+
         // Return true if the metric is unregistered correctly; False otherwise (if the pattern does not already exist).
         public bool UnregisterPattern(String patternName)
         {
             return PatternList.Remove(patternName);
         }
 
-        public List<String> GetSuccefulPatternsForMetric(String metric)
+        public List<String> GetSuccessfulPatternsForMetric(String metric)
         {
             List<String> succesfulPatterns = new List<String>();
             foreach (String patternName in GetPatternsByMetric(metric))
             {
-                if (IsSuccesfulPattern(patternName, metric))
+                if (IsSuccessfulPattern(patternName, metric))
                 {
                     succesfulPatterns.Add(patternName);
                 }
@@ -197,7 +232,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 
             foreach (String patternName in PatternList.Keys)
             {
-                String metricName = (String)GetPatternByName(patternName).ElementAt<Object>(0);
+                String metricName = (String)GetPatternByName(patternName).MetricName;
                 if (metricName != null && metricName.Equals(metric, StringComparison.CurrentCulture))
                 {
                     patternsByMetric.Add(patternName);
@@ -207,24 +242,24 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             return patternsByMetric;
         }
 
-        public bool IsSuccesfulPattern(String patternName, String patternMetric)
+        public bool IsSuccessfulPattern(String patternName, String patternMetric)
         {
-            Dictionary<String, String> patternType = GetPatternType(patternName);
+            PatternType patternType = GetPatternType(patternName);
 
             Dictionary<int, int> metricValues = GetMetricValues(patternMetric);
 
-            if (patternType.Count > 0 && metricValues.Count > 0)
+            if (patternType != null && metricValues.Count > 0)
             {
-                List<Object> patternByName = GetPatternByName(patternName);
+                Pattern patternByName = GetPatternByName(patternName);
 
-                String patternTypeByTime = patternType.ElementAt<KeyValuePair<string, string>>(0).Value;
-                String patternValues = (String)patternByName.ElementAt<Object>(3);
-                String patternTimes = (String)patternByName.ElementAt<Object>(2);
-                String patterrnTypeByValue = patternType.ElementAt<KeyValuePair<string, string>>(1).Value;
+                String patternTypeByTime = patternType.TimePatternType;
+                String patternValues = (String)patternByName.ValueSequence;
+                String patternTimes = (String)patternByName.TimeSequence;
+                String patterrnTypeByValue = patternType.ValuePatternType;
 
                 if (ABSOLUTE_PATTERN.Equals(patternTypeByTime, StringComparison.CurrentCulture))
                 {
-                    return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, patternTimes);
+                    return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, patternTimes, patternType.FittingLine);
                 }
                 else if (RELATIVE_PATTERN.Equals(patternTypeByTime, StringComparison.CurrentCulture))
                 {
@@ -249,7 +284,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
                         metricRelatedTimeArray[i] = firstTime + currentIncrement;
                     }
 
-                    return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, metricRelatedTimeArray);
+                    return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, metricRelatedTimeArray, patternType.FittingLine);
                 }
                 else if (RULE_ANY_PATTERN.Equals(patternTypeByTime, StringComparison.CurrentCulture))
                 {
@@ -262,7 +297,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 
                     if (metricRuleAnyTimeArray.Count > 0)
                     {
-                        return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, metricRuleAnyTimeArray.ToArray());
+                        return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, metricRuleAnyTimeArray.ToArray(), patternType.FittingLine);
                     }
                     else
                     {
@@ -283,7 +318,7 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 
                     if (metricRuleAllTimeArray.Count > 0)
                     {
-                        return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, metricRuleAllTimeArray.ToArray());
+                        return CheckTimeAbsolutePattern(patterrnTypeByValue, metricValues, patternValues, metricRuleAllTimeArray.ToArray(), patternType.FittingLine);
                     }
                     else
                     {
@@ -306,52 +341,140 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             return -1;
         }
 
-        public bool CheckTimeAbsolutePattern(string valueTypePattern, Dictionary<int, int> metricValues, String patternValues, string patternTimes)
+        public bool CheckTimeAbsolutePattern(string valueTypePattern, Dictionary<int, int> metricValues, String patternValues, string patternTimes, FittingLine fittingLine)
         {
             int[] patternTimesArray = GetIntArray(patternTimes);
-            return CheckTimeAbsolutePattern(valueTypePattern, metricValues, patternValues, patternTimesArray);
+            return CheckTimeAbsolutePattern(valueTypePattern, metricValues, patternValues, patternTimesArray, fittingLine);
         }
 
-        public bool CheckTimeAbsolutePattern(string valueTypePattern, Dictionary<int, int> metricValues, String patternValues, int[] patternTimesArray)
+        private bool CheckValueAbsolutePatternWithRange(String patternValues, Dictionary<int, int> metricValues, int[] patternTimesArray, FittingLine fittingLine)
+        {
+            if (!IsFittingLineDefinedCorrectly(fittingLine))
+            {
+                return false;
+            }
+
+            int i = 0;
+            int[] patternValueIntArray = GetIntArray(patternValues);
+            double accuracyRange = 1.0 - fittingLine.ConfidenceInterval;
+            double accuracyLevel = fittingLine.ConfidenceLevel;
+            int numberPointsInTheTarget = 0;
+
+            foreach (int currentPatternTime in patternTimesArray)
+            {
+                int valueForTime = (metricValues != null && metricValues.ContainsKey(currentPatternTime)) ? metricValues[currentPatternTime] : -1;//GetValueForTimeAndChannel(currentPatternTime, channelValue.Key, channelsValues);
+
+                if (IsValueInRange(patternValueIntArray[i], accuracyRange, valueForTime))
+                {
+                    numberPointsInTheTarget++;
+                }
+
+                i++;
+            }
+
+            if ((numberPointsInTheTarget + 0.0)/patternValueIntArray.Length >= accuracyLevel)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsValueInRange(int patternValue, double accuracyRange, int valueForTime)
+        {
+            return (
+                       (accuracyRange < 0 && valueForTime <= (patternValue + patternValue * accuracyRange)) ||
+                       (accuracyRange > 0 &&
+                        valueForTime >= (patternValue - patternValue * accuracyRange) &&
+                        valueForTime <= (patternValue + patternValue * accuracyRange))
+                    );
+        }
+
+        private bool CheckValueAbsolutePattern(String patternValues, Dictionary<int, int> metricValues, int[] patternTimesArray)
+        {
+            int i = 0;
+            int[] patternValueIntArray = GetIntArray(patternValues);
+
+            foreach (int currentPatternTime in patternTimesArray)
+            {
+                int valueForTime = (metricValues != null && metricValues.ContainsKey(currentPatternTime)) ? metricValues[currentPatternTime] : -1;//GetValueForTimeAndChannel(currentPatternTime, channelValue.Key, channelsValues);
+
+                if (patternValueIntArray[i] != valueForTime)
+                {
+                    return false;
+                }
+
+                i++;
+            }
+
+            return true;
+        }
+
+        private bool CheckValueRelativePattern(String patternValues, Dictionary<int, int> metricValues, int[] patternTimesArray)
+        {
+            int i = 0;
+            int firstValue = (metricValues != null && metricValues.Count > 0) ? metricValues.First().Value : 0;
+            String[] patternValueStrArray = GetStrArray(patternValues);
+
+            foreach (int currentPatternTime in patternTimesArray)
+            {
+                int valueForTime = (metricValues != null && metricValues.ContainsKey(currentPatternTime)) ? metricValues[currentPatternTime] : -1;//GetValueForTimeAndChannel(currentPatternTime, channelValue.Key, channelsValues);
+
+                if (i > 0 && firstValue > -1)
+                {
+                    int patternValueInt = (int)Evaluate(patternValueStrArray[i].Replace(@"x", @firstValue.ToString()));
+                    if (patternValueInt != valueForTime)
+                    {
+                        return false;
+                    }
+                }
+                else if (i == 1)
+                {
+                    firstValue = valueForTime;
+                }
+
+                i++;
+            }
+
+            return true;
+        }
+
+        private bool CheckValueRulePattern(String patternValues, Dictionary<int, int> metricValues, int[] patternTimesArray)
         {
             int i = 0;
 
             foreach (int currentPatternTime in patternTimesArray)
             {
-                int valueForTime = metricValues.ContainsKey(currentPatternTime) ? metricValues[currentPatternTime] : -1;//GetValueForTimeAndChannel(currentPatternTime, channelValue.Key, channelsValues);
-                if (ABSOLUTE_PATTERN.Equals(valueTypePattern, StringComparison.CurrentCulture))
+                int valueForTime = (metricValues != null && metricValues.ContainsKey(currentPatternTime)) ? metricValues[currentPatternTime] : -1;//GetValueForTimeAndChannel(currentPatternTime, channelValue.Key, channelsValues);
+
+                if (!IsValueSatisfyPattern(patternValues, valueForTime))
                 {
-                    int[] patternValueIntArray = GetIntArray(patternValues);
-                    if (patternValueIntArray[i] != valueForTime)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
-                else if (RELATIVE_PATTERN.Equals(valueTypePattern, StringComparison.CurrentCulture))
-                {
-                    String[] patternValueStrArray = GetStrArray(patternValues);
-                    int firstValue = -1;
-                    if (i > 0 && firstValue > -1)
-                    {
-                        int patternValueInt = (int)Evaluate(patternValueStrArray[i].Replace(@"x", @firstValue.ToString()));
-                        if (patternValueInt != valueForTime)
-                        {
-                            return false;
-                        }
-                    }
-                    else if (i == 0)
-                    {
-                        firstValue = valueForTime;
-                    }
-                }
-                else if (RULE_PATTERN.Equals(valueTypePattern, StringComparison.CurrentCulture))
-                {
-                    if (!IsValueSatisfyPattern(patternValues, valueForTime))
-                    {
-                        return false;
-                    }
-                }
+
                 i++;
+            }
+
+            return true;
+        }
+
+        public bool CheckTimeAbsolutePattern(string valueTypePattern, Dictionary<int, int> metricValues, String patternValues, int[] patternTimesArray, FittingLine fittingLine)
+        {
+            if (ABSOLUTE_PATTERN_WITH_RANGE.Equals(valueTypePattern, StringComparison.CurrentCulture))
+            {
+                return CheckValueAbsolutePatternWithRange(patternValues, metricValues, patternTimesArray, fittingLine);
+            }
+            else if (ABSOLUTE_PATTERN.Equals(valueTypePattern, StringComparison.CurrentCulture))
+            {
+                return CheckValueAbsolutePattern(patternValues, metricValues, patternTimesArray);
+            }
+            else if (RELATIVE_PATTERN.Equals(valueTypePattern, StringComparison.CurrentCulture))
+            {
+                return CheckValueRelativePattern(patternValues, metricValues, patternTimesArray);
+            }
+            else if (RULE_PATTERN.Equals(valueTypePattern, StringComparison.CurrentCulture))
+            {
+                return CheckValueRulePattern(patternValues, metricValues, patternTimesArray);
             }
 
             return true;
@@ -418,18 +541,20 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
 
         public static bool EvaluateBool(string expression)
         {
+            if (String.IsNullOrEmpty(expression)) return false;
+
             string[] operands = expression.Split('>', '<', '=');
             if(expression.Contains(">"))
             {
-                return Int32.Parse(operands[0]) > Int32.Parse(operands[1]);
+                return Int32.Parse(operands[0], CultureInfo.InvariantCulture) > Int32.Parse(operands[1], CultureInfo.InvariantCulture);
             }
             else if (expression.Contains("<"))
             {
-                return Int32.Parse(operands[0]) < Int32.Parse(operands[1]);
+                return Int32.Parse(operands[0], CultureInfo.InvariantCulture) < Int32.Parse(operands[1], CultureInfo.InvariantCulture);
             }
             else if (expression.Contains("="))
             {
-                return Int32.Parse(operands[0]) == Int32.Parse(operands[1]);
+                return Int32.Parse(operands[0], CultureInfo.InvariantCulture) == Int32.Parse(operands[1], CultureInfo.InvariantCulture);
             }
             return false;
         }
@@ -439,34 +564,36 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         //The method support evaluation of expressions following the format: \d+('+' | '-' | '/' | '*')\d+(('+' | '-' )\d)*
         public static Object Evaluate(string expression)
         {
-            expression = expression.Replace(" ", string.Empty);
+            expression = (!String.IsNullOrEmpty(expression)) ? expression.Replace(" ", string.Empty) : expression;
             String tmpExpression = expression;
             string[] operands = expression.Split('+', '-', '/', '*');
             int result = 0;
-            Int32.TryParse(operands[0], out result);
-            for (int i = 0; i < operands.Count() - 1; i++)
+            if (Int32.TryParse(operands[0], out result))
             {
-                Char mathOperator = tmpExpression[tmpExpression.IndexOf(operands[i]) + 1];
-                tmpExpression = ReplaceFirst(expression, operands[i], "");
-                if ('+'.Equals(mathOperator))
+                for (int i = 0; i < operands.Count() - 1; i++)
                 {
-                    result += Int32.Parse(operands[i + 1]);
-                }
+                    String mathOperator = tmpExpression.Substring(tmpExpression.IndexOf(operands[i]) + operands[i].Length, 1);
+                    tmpExpression = ReplaceFirst(expression, operands[i], "");
+                    if ("+".Equals(mathOperator))
+                    {
+                        result += Int32.Parse(operands[i + 1], CultureInfo.InvariantCulture);
+                    }
 
-                if ('-'.Equals(mathOperator))
-                {
-                    result -= Int32.Parse(operands[i + 1]);
-                }
+                    if ("-".Equals(mathOperator))
+                    {
+                        result -= Int32.Parse(operands[i + 1], CultureInfo.InvariantCulture);
+                    }
 
 
-                if ('*'.Equals(mathOperator))
-                {
-                    result *= Int32.Parse(operands[i + 1]);
-                }
+                    if ("*".Equals(mathOperator))
+                    {
+                        result *= Int32.Parse(operands[i + 1], CultureInfo.InvariantCulture);
+                    }
 
-                if ('/'.Equals(mathOperator))
-                {
-                    result /= Int32.Parse(operands[i + 1]);
+                    if ("/".Equals(mathOperator))
+                    {
+                        result /= Int32.Parse(operands[i + 1], CultureInfo.InvariantCulture);
+                    }
                 }
             }
             return result;
@@ -488,20 +615,25 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
         2. { name=”Happy pattern”, metric=”happiness”, feature=”moving average”, time=”120000 300000 600000”, values=”x  GT(x+10)  LT(x-20) }
         3. { name=”A quiz points rule”, metric=”Quiz result”, feature=”none”, time=”GT(180000) LT(480000)”, values=”GT(20) AND LT(30)” }
         Types of patterns depending on the value of 'values' are analogically of the above.*/
-        public Dictionary<String, String> GetPatternType(String patternName)
+        public PatternType GetPatternType(String patternName)
         {
-            List<Object> patternValue = GetPatternByName(patternName);
+            Pattern patternValue = GetPatternByName(patternName);
             if (patternValue != null)
             {
-                String timePattern = GetTimeValuesPatternType((String)patternValue.ElementAt<Object>(2));
-                String valuesPattern = GetTimeValuesPatternType((String)patternValue.ElementAt<Object>(3));
+                //A pattern is define by 
+                String timePattern = GetTimeValuesPatternType((String)patternValue.TimeSequence);
+                String valuesPattern = GetTimeValuesPatternType((String)patternValue.ValueSequence);
+                FittingLine fittingLine = patternValue.FittingLine;
+
+                if (fittingLine != null && valuesPattern != null && ABSOLUTE_PATTERN.Equals(valuesPattern))
+                {
+                    //ABSOLUTE_PATTERN_WITH_RANGE is valid only for y coordinates
+                    valuesPattern = ABSOLUTE_PATTERN_WITH_RANGE;
+                }
 
                 if (timePattern != null && valuesPattern != null)
                 {
-                    return new Dictionary<string, string>() {
-                        { "timePattern", timePattern },
-                        { "valuesPattern", valuesPattern}
-                    };
+                    return new PatternType(timePattern, valuesPattern, fittingLine);
                 }
             }
 
@@ -509,14 +641,8 @@ namespace Assets.Rage.PlayerCentricRulePatternBasedAdaptationAsset
             return null;
         }
 
-        //Return all registered patterns.
-        public Dictionary<String, List<Object>> GetRegisterPattern()
-        {
-            return PatternList;
-        }
-
         //Return a pattern by Name.
-        public List<Object> GetPatternByName(String patternName)
+        public Pattern GetPatternByName(String patternName)
         {
             if (PatternList.ContainsKey(patternName))
             {

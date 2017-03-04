@@ -52,6 +52,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="AbsolutePatternsWithRangeSearching.cs" />
     <Compile Include="MetricsRegistration.cs" />
     <Compile Include="PlayerCentricStatisticExtractorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

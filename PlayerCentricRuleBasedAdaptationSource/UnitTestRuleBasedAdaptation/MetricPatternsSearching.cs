@@ -73,7 +73,7 @@ namespace UnitTestRuleBasedAdaptation
             pattern.SetMetricValue("GSR", 110, 460000);
 
 
-            List<string> realResult = pattern.GetSuccefulPatternsForMetric("GSR");
+            List<string> realResult = pattern.GetSuccessfulPatternsForMetric("GSR");
 
             //assert
             //define expected result
@@ -95,13 +95,11 @@ namespace UnitTestRuleBasedAdaptation
             pattern.SetMetricValue("GSR", 110, 460000);
 
 
-            List<string> realResult = pattern.GetSuccefulPatternsForMetric("GSR");
+            List<string> realResult = pattern.GetSuccessfulPatternsForMetric("GSR");
 
             //assert
             //define expected result
-            List<String> expectedResult = new List<String> {
-                                                           "GSR mean pattern 3"
-                                                          };
+            List<String> expectedResult = new List<String> {"GSR mean pattern 3"};
             Assert.IsTrue(realResult.Count == expectedResult.Count && !realResult.Except(expectedResult).Any());
         }
 
@@ -117,7 +115,7 @@ namespace UnitTestRuleBasedAdaptation
             pattern.SetMetricValue("GSR", 20, 12000);
 
 
-            List<string> realResult = pattern.GetSuccefulPatternsForMetric("GSR");
+            List<string> realResult = pattern.GetSuccessfulPatternsForMetric("GSR");
 
             //assert
             //define expected result
@@ -141,13 +139,11 @@ namespace UnitTestRuleBasedAdaptation
             pattern.SetMetricValue("GSR", 20, 12000);
 
 
-            List<string> realResult = pattern.GetSuccefulPatternsForMetric("GSR");
+            List<string> realResult = pattern.GetSuccessfulPatternsForMetric("GSR");
 
             //assert
             //define expected result
-            List<String> expectedResult = new List<String> {
-                                                           "GSR mean pattern 4"
-                                                          };
+            List<String> expectedResult = new List<String> {"GSR mean pattern 4"};
             Assert.IsTrue(realResult.Count == expectedResult.Count && !realResult.Except(expectedResult).Any());
         }
 
@@ -166,8 +162,8 @@ namespace UnitTestRuleBasedAdaptation
             pattern.SetMetricValue("GSR Exception", 20, 9000);
 
 
-            List<string> realResult = pattern.GetSuccefulPatternsForMetric("GSR");
-            realResult.AddRange(pattern.GetSuccefulPatternsForMetric("GSR Exception"));
+            List<string> realResult = pattern.GetSuccessfulPatternsForMetric("GSR");
+            realResult.AddRange(pattern.GetSuccessfulPatternsForMetric("GSR Exception"));
 
             //assert
             //define expected result
@@ -193,8 +189,8 @@ namespace UnitTestRuleBasedAdaptation
             pattern.SetMetricValue("GSR Exception", 20, 9000);
 
 
-            List<string> realResult = pattern.GetSuccefulPatternsForMetric("GSR");
-            realResult.AddRange(pattern.GetSuccefulPatternsForMetric("GSR Exception"));
+            List<string> realResult = pattern.GetSuccessfulPatternsForMetric("GSR");
+            realResult.AddRange(pattern.GetSuccessfulPatternsForMetric("GSR Exception"));
 
             //assert
             //define expected result

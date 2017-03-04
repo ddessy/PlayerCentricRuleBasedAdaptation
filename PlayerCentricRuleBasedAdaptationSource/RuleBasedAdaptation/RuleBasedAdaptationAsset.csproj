@@ -46,6 +46,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FittingLine.cs" />
+    <Compile Include="Pattern.cs" />
+    <Compile Include="PatternType.cs" />
     <Compile Include="PlayerCentricRuleBasedAdaptationAsset.cs" />
     <Compile Include="PlayerCentricStatisticExtractorDefault.cs" />
     <Compile Include="PlayerCentricRulePattern.cs" />

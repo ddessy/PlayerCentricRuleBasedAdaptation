@@ -69,7 +69,7 @@ namespace UnitTestRuleBasedAdaptation
             pattern.RegisterPattern("Simple GSR mean pattern", "GSR", "average", "3000 6000  9000", "20 24 20");
 
             //assert
-            Assert.AreEqual(pattern.GetRegisterPattern().Count, 5);
+            Assert.AreEqual(pattern.PatternList.Count, 5);
         }
 
         [TestMethod]
@@ -92,16 +92,16 @@ namespace UnitTestRuleBasedAdaptation
         {
             //arrange
             PlayerCentricRulePattern pattern = new PlayerCentricRulePattern();
-            List<Object> targetPattern = new List<Object> { "GSR", "average", "t t+3000 t+6000 t+9000", "16 20 24 20" };
+            Pattern targetPattern = new Pattern("GSR", "average", "t t+3000 t+6000 t+9000", "16 20 24 20");
             pattern.RegisterPattern("Simple GSR mean pattern", "GSR", "average", "3000 6000  9000", "20 24 20");
 
             //act
             //add a pattern for the metric "GSR"
             pattern.RegisterPattern("GSR pattern", "GSR", "average", "t t+3000 t+6000 t+9000", "16 20 24 20");
-            List<Object> checkedPattern = pattern.GetPatternByName("GSR pattern");
+            Pattern checkedPattern = pattern.GetPatternByName("GSR pattern");
 
             //assert
-            Assert.IsTrue(checkedPattern.Count == targetPattern.Count && !checkedPattern.Except(targetPattern).Any());
+            Assert.IsTrue(checkedPattern != null && checkedPattern.Equals(targetPattern));
         }
 
         [TestMethod]
