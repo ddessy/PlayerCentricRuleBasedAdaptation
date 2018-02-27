@@ -1,5 +1,5 @@
 =====================================================================================
-The license for Real-Time Arousal Detection Using Galvanic Skin Response Asset
+The license for Player-centric rule-and-pattern-based adaptation asset
 =====================================================================================
 
 Copyright 2018 Sofia University
